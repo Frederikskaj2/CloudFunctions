@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>netcoreapp3.1</TargetFramework>
+		<RootNamespace>Frederikskaj2.CloudFunctions.EmailSender</RootNamespace>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+		<PackageReference Include="MailKit" Version="2.9.0" />
+		<PackageReference Include="Microsoft.NET.Sdk.Functions" Version="3.0.9" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\Validation\Validation.csproj" />
+	</ItemGroup>
+
+</Project>

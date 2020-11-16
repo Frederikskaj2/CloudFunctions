@@ -27,10 +27,10 @@ namespace Frederikskaj2.CloudFunctions.EmailSender
             senders = options.Value.Senders.ToDictionary(kvp => kvp.Key, kvp => kvp.Value, StringComparer.OrdinalIgnoreCase);
         }
 
-        public async Task SendAsync(SendRequest request)
+        public async Task SendAsync(SendCommand command)
         {
-            var message = CreateMessage(request);
-            var email = request.From!.Email!;
+            var message = CreateMessage(command);
+            var email = command.From!.Email!;
             await SendAsync(email, message);
             LogMessage(message);
         }
@@ -51,33 +51,33 @@ namespace Frederikskaj2.CloudFunctions.EmailSender
             logger.LogInformation("Mail sent\n" + Encoding.UTF8.GetString(stream.ToArray()));
         }
 
-        static MimeMessage CreateMessage(SendRequest request)
+        static MimeMessage CreateMessage(SendCommand command)
         {
             var message = new MimeMessage();
 
-            message.From.Add(CreateAddress(request.From!));
+            message.From.Add(CreateAddress(command.From!));
 
-            if (request.ReplyTo != null)
-                message.ReplyTo.Add(CreateAddress(request.ReplyTo));
+            if (command.ReplyTo != null)
+                message.ReplyTo.Add(CreateAddress(command.ReplyTo));
 
-            foreach (var to in request.To!)
+            foreach (var to in command.To!)
                 message.To.Add(CreateAddress(to));
 
-            if (request.Cc != null)
-                foreach (var cc in request.Cc!)
+            if (command.Cc != null)
+                foreach (var cc in command.Cc!)
                     message.Cc.Add(CreateAddress(cc));
 
-            if (request.Bcc != null)
-                foreach (var bcc in request.Bcc!)
+            if (command.Bcc != null)
+                foreach (var bcc in command.Bcc!)
                     message.Bcc.Add(CreateAddress(bcc));
 
-            message.Subject = request.Subject;
+            message.Subject = command.Subject;
 
             var bodyBuilder = new BodyBuilder();
-            if (!string.IsNullOrEmpty(request.PlainTextBody))
-                bodyBuilder.TextBody = request.PlainTextBody;
-            if (!string.IsNullOrEmpty(request.HtmlBody))
-                bodyBuilder.HtmlBody = request.HtmlBody;
+            if (!string.IsNullOrEmpty(command.PlainTextBody))
+                bodyBuilder.TextBody = command.PlainTextBody;
+            if (!string.IsNullOrEmpty(command.HtmlBody))
+                bodyBuilder.HtmlBody = command.HtmlBody;
             message.Body = bodyBuilder.ToMessageBody();
             return message;
         }

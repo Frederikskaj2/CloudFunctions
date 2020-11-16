@@ -6,9 +6,7 @@ using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using System;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Frederikskaj2.CloudFunctions.Functions
@@ -36,11 +34,15 @@ namespace Frederikskaj2.CloudFunctions.Functions
             using var streamReader = new StreamReader(request.Body);
             var requestBody = await streamReader.ReadToEndAsync();
             var sendRequest = JsonConvert.DeserializeObject<SendRequest>(requestBody);
-            var errors = validator.Validate(sendRequest).ToList();
-            if (errors.Count > 0)
-                return new BadRequestObjectResult(string.Join(Environment.NewLine, errors.Select(error => error.ToString(0))));
-            await emailService.SendAsync(sendRequest);
-            return new NoContentResult();
+            var validation = validator.Validate(sendRequest);
+            var result = await validation.MatchAsync(
+                SuccAsync: async command =>
+                {
+                    await emailService.SendAsync(command);
+                    return (IActionResult) new NoContentResult();
+                },
+                Fail: errors => new BadRequestObjectResult(errors));
+            return result;
         }
     }
 }

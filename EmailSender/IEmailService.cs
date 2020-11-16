@@ -4,6 +4,6 @@ namespace Frederikskaj2.CloudFunctions.EmailSender
 {
     public interface IEmailService
     {
-        Task SendAsync(SendRequest request);
+        Task SendAsync(SendCommand command);
     }
 }

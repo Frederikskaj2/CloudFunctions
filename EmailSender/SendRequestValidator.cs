@@ -48,19 +48,16 @@ namespace Frederikskaj2.CloudFunctions.EmailSender
             from toNotNull in ValidateAddressesOptional(to, "To")
             from ccNotNull in ValidateAddressesOptional(cc, "CC")
             from bccNotNull in ValidateAddressesOptional(bcc, "BCC")
-            from receivers in ValidateAtLeastOnReceiver(toNotNull, ccNotNull, bccNotNull)
+            from receivers in ValidateAtLeastOneReceiver(toNotNull, ccNotNull, bccNotNull)
             select receivers;
 
-        static Validation<string, (IEnumerable<Address> To, IEnumerable<Address> Cc, IEnumerable<Address> Bcc)> ValidateAtLeastOnReceiver(IEnumerable<Address> to, IEnumerable<Address> cc, IEnumerable<Address> bcc) =>
-            to.Concat(cc).Concat(bcc).Any()
-                ? Success<string, (IEnumerable<Address> To, IEnumerable<Address> Cc, IEnumerable<Address> Bcc)>((to, cc, bcc))
-                : Fail<string, (IEnumerable<Address> To, IEnumerable<Address> Cc, IEnumerable<Address> Bcc)>("No recievers.");
+        static Validation<string, (IEnumerable<Address> To, IEnumerable<Address> Cc, IEnumerable<Address> Bcc)> ValidateAtLeastOneReceiver(IEnumerable<Address> to, IEnumerable<Address> cc, IEnumerable<Address> bcc) =>
+            to.Concat(cc).Concat(bcc).Any() ? (to, cc, bcc) : "No recievers.";
 
         static Validation<string, (Option<string> PlainText, Option<string> Html)> ValidateBody(string? plainText, string? html) =>
             plainText is { Length: > 0 } || html is { Length: > 0 }
                 // Bang required to remove compiler warning. Null is implicitly converted to None.
-                ? Success<string, (Option<string>, Option<string>)>((plainText!, html!))
-                : Fail<string, (Option<string>, Option<string>)>("Body is missing or empty.");
+                ? (plainText!, html!) : "Body is missing or empty.";
 
         static Validation<string, string> ValidateSender(Func<string, bool> isValidSender, string email) =>
             isValidSender(email) ? Success<string, string>(email) : Fail<string, string>("From is unknown.");
@@ -96,6 +93,6 @@ namespace Frederikskaj2.CloudFunctions.EmailSender
             value is { Length: > 0 } ? Success<string, string>(value!) : Fail<string, string>($"{context} is missing or empty.");
 
         static Validation<string, T> IsNotNull<T>(T? value, string context) where T : class =>
-            value is not null ? Success<string, T>(value!) : Fail<string, T>($"{context} is missing.");
+            value is not null ? value! : $"{context} is missing.";
     }
 }

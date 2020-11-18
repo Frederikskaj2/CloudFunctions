@@ -8,7 +8,7 @@ on:
 
 env:
   AZURE_FUNCTIONAPP_NAME: frederikskaj2functions
-  DOTNET_VERSION: '5.0.100'
+  DOTNET_VERSION: '3.1.404'
 
 jobs:
   build-and-deploy:
